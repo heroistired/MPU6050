@@ -9,6 +9,7 @@
 "..\obj\mpu6050.o"
 "..\obj\inv_mpu.o"
 "..\obj\inv_mpu_dmp_motion_driver.o"
+"..\obj\servo.o"
 "..\obj\delay.o"
 "..\obj\sys.o"
 "..\obj\usart.o"

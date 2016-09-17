@@ -7,6 +7,7 @@
 #include "mpu6050.h"
 #include "inv_mpu.h"
 #include "inv_mpu_dmp_motion_driver.h" 
+#include "servo.h"
 
 //ALIENTEK 探索者STM32F407开发板 实验32
 //MPU6050六轴传感器 实验 -库函数版本
@@ -100,6 +101,7 @@ int main(void)
 { 
 	u8 t=0,report=1;			//默认开启上报
 	u8 key;
+	int degree = 100;
 	float pitch,roll,yaw; 		//欧拉角
 	short aacx,aacy,aacz;		//加速度传感器原始数据
 	short gyrox,gyroy,gyroz;	//陀螺仪原始数据
@@ -111,6 +113,9 @@ int main(void)
 	KEY_Init();					//初始化按键
  	LCD_Init();					//LCD初始化
 	MPU_Init();					//初始化MPU6050
+	Servo_TIM_Config();
+	Servo2_SetDegree(80); 
+	Servo2_SetDegree(100); 
  	POINT_COLOR=RED;//设置字体为红色 
 	LCD_ShowString(30,50,200,16,16,"Explorer STM32F4");	
 	LCD_ShowString(30,70,200,16,16,"MPU6050 TEST");	
@@ -131,7 +136,65 @@ int main(void)
  	LCD_ShowString(30,220,200,16,16,"Pitch:    . C");	
  	LCD_ShowString(30,240,200,16,16," Roll:    . C");	 
  	LCD_ShowString(30,260,200,16,16," Yaw :    . C");	 
- 	while(1)
+	 while(1)
+	{
+		key=KEY_Scan(0);
+		if(key==KEY0_PRES)
+		{
+			report=!report;
+			if(report)LCD_ShowString(30,170,200,16,16,"UPLOAD ON ");
+			else LCD_ShowString(30,170,200,16,16,"UPLOAD OFF");
+		}
+		if(mpu_dmp_get_data(&pitch,&roll,&yaw)==0)
+		{ 
+			//temp=MPU_Get_Temperature();	//得到温度值
+			//MPU_Get_Accelerometer(&aacx,&aacy,&aacz);	//得到加速度传感器数据
+			//MPU_Get_Gyroscope(&gyrox,&gyroy,&gyroz);	//得到陀螺仪数据
+			//if(report)mpu6050_send_data(aacx,aacy,aacz,gyrox,gyroy,gyroz);//用自定义帧发送加速度和陀螺仪原始数据
+			//if(report)usart1_report_imu(aacx,aacy,aacz,gyrox,gyroy,gyroz,(int)(roll*100),(int)(pitch*100),(int)(yaw*10));
+			printf(" %.2f %.2f %.2f\n", pitch, roll, yaw);
+			/*if((t%10)==0)
+			{ 
+				if(temp<0)
+				{
+					//LCD_ShowChar(30+48,200,'-',16,0);		//显示负号
+					temp=-temp;		//转为正数
+				}else LCD_ShowChar(30+48,200,' ',16,0);		//去掉负号 
+				//LCD_ShowNum(30+48+8,200,temp/100,3,16);		//显示整数部分	    
+				//LCD_ShowNum(30+48+40,200,temp%10,1,16);		//显示小数部分 
+				temp=pitch*10;
+				if(temp<0)
+				{
+					//LCD_ShowChar(30+48,220,'-',16,0);		//显示负号
+					temp=-temp;		//转为正数
+				}else LCD_ShowChar(30+48,220,' ',16,0);		//去掉负号 
+				//LCD_ShowNum(30+48+8,220,temp/10,3,16);		//显示整数部分	    
+				//LCD_ShowNum(30+48+40,220,temp%10,1,16);		//显示小数部分 
+				temp=roll*10;
+				if(temp<0)
+				{
+					//LCD_ShowChar(30+48,240,'-',16,0);		//显示负号
+					temp=-temp;		//转为正数
+				}else LCD_ShowChar(30+48,240,' ',16,0);		//去掉负号 
+				//LCD_ShowNum(30+48+8,240,temp/10,3,16);		//显示整数部分	    
+				//LCD_ShowNum(30+48+40,240,temp%10,1,16);		//显示小数部分 
+				temp=yaw*10;
+				if(temp<0)
+				{
+					//LCD_ShowChar(30+48,260,'-',16,0);		//显示负号
+					temp=-temp;		//转为正数
+				}else LCD_ShowChar(30+48,260,' ',16,0);		//去掉负号 
+				//LCD_ShowNum(30+48+8,260,temp/10,3,16);		//显示整数部分	    
+				//LCD_ShowNum(30+48+40,260,temp%10,1,16);		//显示小数部分  
+				t=0;
+				LED0=!LED0;//LED闪烁
+			}*/
+		}
+		t++; 
+	} 	
+}
+
+/* 	while(1)
 	{
 		key=KEY_Scan(0);
 		if(key==KEY0_PRES)
@@ -143,10 +206,10 @@ int main(void)
 		if(mpu_dmp_get_data(&pitch,&roll,&yaw)==0)
 		{ 
 			temp=MPU_Get_Temperature();	//得到温度值
-			MPU_Get_Accelerometer(&aacx,&aacy,&aacz);	//得到加速度传感器数据
-			MPU_Get_Gyroscope(&gyrox,&gyroy,&gyroz);	//得到陀螺仪数据
-			if(report)mpu6050_send_data(aacx,aacy,aacz,gyrox,gyroy,gyroz);//用自定义帧发送加速度和陀螺仪原始数据
-			if(report)usart1_report_imu(aacx,aacy,aacz,gyrox,gyroy,gyroz,(int)(roll*100),(int)(pitch*100),(int)(yaw*100));
+			//MPU_Get_Accelerometer(&aacx,&aacy,&aacz);	//得到加速度传感器数据
+			//MPU_Get_Gyroscope(&gyrox,&gyroy,&gyroz);	//得到陀螺仪数据
+			//if(report)mpu6050_send_data(aacx,aacy,aacz,gyrox,gyroy,gyroz);//用自定义帧发送加速度和陀螺仪原始数据
+			//if(report)usart1_report_imu(aacx,aacy,aacz,gyrox,gyroy,gyroz,(int)(roll*100),(int)(pitch*100),(int)(yaw*100));
 			if((t%10)==0)
 			{ 
 				if(temp<0)
@@ -157,6 +220,17 @@ int main(void)
 				LCD_ShowNum(30+48+8,200,temp/100,3,16);		//显示整数部分	    
 				LCD_ShowNum(30+48+40,200,temp%10,1,16);		//显示小数部分 
 				temp=pitch*10;
+				if(pitch > 60)
+					degree = 60;
+				else if(pitch < -60)
+					degree = -60;
+				else 
+					degree = pitch;
+				if(degree >= 0)
+					degree = 80 + degree;
+				else
+					degree = 80 + degree*40/60;
+				Servo1_SetDegree(degree);
 				if(temp<0)
 				{
 					LCD_ShowChar(30+48,220,'-',16,0);		//显示负号
@@ -164,14 +238,27 @@ int main(void)
 				}else LCD_ShowChar(30+48,220,' ',16,0);		//去掉负号 
 				LCD_ShowNum(30+48+8,220,temp/10,3,16);		//显示整数部分	    
 				LCD_ShowNum(30+48+40,220,temp%10,1,16);		//显示小数部分 
+				LCD_ShowNum(30+48+8,300,degree,3,16);		//显示整数部分
 				temp=roll*10;
+				if(roll > 60)
+					degree = 60;
+				else if(roll < -60)
+					degree = -60;
+				else 
+					degree = roll;
+				if(degree >= 0)
+					degree = 100 - degree;
+				else
+					degree = 100 - degree*45/60;
+				Servo2_SetDegree(degree);
 				if(temp<0)
 				{
 					LCD_ShowChar(30+48,240,'-',16,0);		//显示负号
 					temp=-temp;		//转为正数
 				}else LCD_ShowChar(30+48,240,' ',16,0);		//去掉负号 
 				LCD_ShowNum(30+48+8,240,temp/10,3,16);		//显示整数部分	    
-				LCD_ShowNum(30+48+40,240,temp%10,1,16);		//显示小数部分 
+				LCD_ShowNum(30+48+40,240,temp%10,1,16);		//显示小数部分
+				LCD_ShowNum(30+48+8,320,degree,3,16);		//显示整数部分
 				temp=yaw*10;
 				if(temp<0)
 				{
@@ -179,11 +266,11 @@ int main(void)
 					temp=-temp;		//转为正数
 				}else LCD_ShowChar(30+48,260,' ',16,0);		//去掉负号 
 				LCD_ShowNum(30+48+8,260,temp/10,3,16);		//显示整数部分	    
-				LCD_ShowNum(30+48+40,260,temp%10,1,16);		//显示小数部分  
+				LCD_ShowNum(30+48+40,260,temp%10,1,16);		//显示小数部分
 				t=0;
 				LED0=!LED0;//LED闪烁
 			}
 		}
 		t++; 
 	} 	
-}
+}*/
